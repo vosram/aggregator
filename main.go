@@ -1,14 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/vosram/aggregator/internal/config"
+	"github.com/vosram/aggregator/internal/database"
 )
 
 type state struct {
+	db   *database.Queries
 	conf *config.Config
 }
 
@@ -17,9 +21,19 @@ func main() {
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	state := state{conf: &config}
 	activeCommands := NewCommands()
 	activeCommands.register("login", handleLogin)
+	activeCommands.register("register", handleRegister)
+
+	db, err := sql.Open("postgres", config.DBUrl)
+	if err != nil {
+		log.Fatalf("error connecting to db: %v", err)
+	}
+	defer db.Close()
+	dbQueries := database.New(db)
+
+	state := &state{conf: &config, db: dbQueries}
+
 	args := os.Args[1:]
 
 	if len(args) < 1 {
@@ -36,7 +50,7 @@ func main() {
 		}
 	}
 
-	err = activeCommands.run(&state, cliCommand)
+	err = activeCommands.run(state, cliCommand)
 	if err != nil {
 		log.Fatal("Error: ", err)
 	}

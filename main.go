@@ -26,6 +26,7 @@ func main() {
 	activeCommands.register("register", handleRegister)
 	activeCommands.register("reset", handleReset)
 	activeCommands.register("users", handleGetUsers)
+	activeCommands.register("agg", handleAgg)
 
 	db, err := sql.Open("postgres", config.DBUrl)
 	if err != nil {

@@ -40,3 +40,25 @@ func handleAddFeed(s *state, cmd command) error {
 	fmt.Printf("- UserID: %s\n", newFeed.UserID)
 	return nil
 }
+
+func handleListFeeds(s *state, cmd command) error {
+	feeds, err := s.db.ListFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't get all feeds: %w", err)
+	}
+	fmt.Println("All Feeds")
+	fmt.Println("=======")
+	for i, feed := range feeds {
+		fmt.Printf("Feed %d\n", i+1)
+		fmt.Println("-------")
+		fmt.Printf("- ID: %s\n", feed.ID)
+		fmt.Printf("- CreatedAt: %s\n", feed.CreatedAt)
+		fmt.Printf("- UpdatedAt: %v\n", feed.UpdatedAt)
+		fmt.Printf("- Name: %s\n", feed.Name)
+		fmt.Printf("- Url: %s\n", feed.Url)
+		fmt.Printf("- UserID: %s\n", feed.UserID)
+		fmt.Printf("- UserName: %s\n", feed.UserName)
+		fmt.Println()
+	}
+	return nil
+}

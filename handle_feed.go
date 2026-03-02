@@ -9,14 +9,9 @@ import (
 	"github.com/vosram/aggregator/internal/database"
 )
 
-func handleAddFeed(s *state, cmd command) error {
+func handleAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("usage: addfeed <feed name> <url>")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.conf.CurrentUser)
-	if err != nil {
-		return fmt.Errorf("couldn't get logged in user: %w", err)
 	}
 
 	now := time.Now().UTC()

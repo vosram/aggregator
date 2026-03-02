@@ -9,16 +9,12 @@ import (
 	"github.com/vosram/aggregator/internal/database"
 )
 
-func handleFeedFollow(s *state, cmd command) error {
+func handleFeedFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("usage: follow <url>")
 	}
 	url := cmd.Args[0]
 	now := time.Now().UTC()
-	currentUser, err := s.db.GetUser(context.Background(), s.conf.CurrentUser)
-	if err != nil {
-		return fmt.Errorf("couldn't fetch current user: %w", err)
-	}
 	feed, err := s.db.GetFeedByUrl(context.Background(), url)
 	if err != nil {
 		return fmt.Errorf("couldn't get feed: %w", err)
@@ -28,7 +24,7 @@ func handleFeedFollow(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: now,
 		UpdatedAt: now,
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
@@ -41,13 +37,7 @@ func handleFeedFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handleListFeedFollows(s *state, cmd command) error {
-
-	user, err := s.db.GetUser(context.Background(), s.conf.CurrentUser)
-	if err != nil {
-		return fmt.Errorf("couldn't fetch current user from db: %w", err)
-	}
-
+func handleListFeedFollows(s *state, cmd command, user database.User) error {
 	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("couldn't get feed follows: %w", err)

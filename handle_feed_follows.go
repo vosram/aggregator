@@ -40,3 +40,28 @@ func handleFeedFollow(s *state, cmd command) error {
 	fmt.Println("Feed: ", feedAdded.FeedName)
 	return nil
 }
+
+func handleListFeedFollows(s *state, cmd command) error {
+
+	user, err := s.db.GetUser(context.Background(), s.conf.CurrentUser)
+	if err != nil {
+		return fmt.Errorf("couldn't fetch current user from db: %w", err)
+	}
+
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return fmt.Errorf("couldn't get feed follows: %w", err)
+	}
+
+	if len(feedFollows) == 0 {
+		fmt.Println("No feed follows found for this user.")
+		return nil
+	}
+
+	fmt.Printf("%s's feedFollows:\n", user.Name)
+	fmt.Println("========")
+	for _, feed := range feedFollows {
+		fmt.Printf("* %s\n", feed.FeedName)
+	}
+	return nil
+}

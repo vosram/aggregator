@@ -30,7 +30,7 @@ func main() {
 	activeCommands.register("addfeed", handleAddFeed)
 	activeCommands.register("feeds", handleListFeeds)
 	activeCommands.register("follow", handleFeedFollow)
-	activeCommands.register("following", handleFollowing)
+	activeCommands.register("following", handleListFeedFollows)
 
 	db, err := sql.Open("postgres", config.DBUrl)
 	if err != nil {

@@ -29,6 +29,8 @@ func main() {
 	activeCommands.register("agg", handleAgg)
 	activeCommands.register("addfeed", handleAddFeed)
 	activeCommands.register("feeds", handleListFeeds)
+	activeCommands.register("follow", handleFeedFollow)
+	activeCommands.register("following", handleFollowing)
 
 	db, err := sql.Open("postgres", config.DBUrl)
 	if err != nil {

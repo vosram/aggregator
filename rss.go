@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"html"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/vosram/aggregator/internal/database"
 )
 
 type RSSFeed struct {
@@ -68,4 +71,30 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	}
 
 	return &xmlData, nil
+}
+
+func scrapeFeeds(s *state) error {
+	feed, err := s.db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't get next feed to fetch: %w", err)
+	}
+
+	err = s.db.MarkFeedFetched(context.Background(), database.MarkFeedFetchedParams{
+		LastFetchedAt: sql.NullTime{Time: time.Now().UTC(), Valid: true},
+		ID:            feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't mark feed as fetched: %w", err)
+	}
+
+	feedData, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n%s's Posts\n", feedData.Channel.Title)
+	fmt.Println("=======")
+	for _, feedItem := range feedData.Channel.Item {
+		fmt.Printf("* %s\n", feedItem.Title)
+	}
+	return nil
 }

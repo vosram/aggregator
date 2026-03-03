@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func handleAgg(s *state, cmd command) error {
 	for ; ; <-ticker.C {
 		err = scrapeFeeds(s)
 		if err != nil {
-			fmt.Println(err)
+			log.Println("couldn't scrape a feed: ", err)
 		}
 	}
 }

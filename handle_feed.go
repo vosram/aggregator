@@ -44,6 +44,7 @@ func handleAddFeed(s *state, cmd command, user database.User) error {
 	fmt.Printf("- Name: %s\n", newFeed.Name)
 	fmt.Printf("- Url: %s\n", newFeed.Url)
 	fmt.Printf("- UserId: %s\n", newFeed.UserID)
+	fmt.Printf("- LastFetchedAt: %s\n", newFeed.LastFetchedAt.Time.Format(time.RFC1123Z))
 
 	fmt.Println("Feed followed successfully:")
 	fmt.Printf("%s is now following %s!\n", feedFollow.UserName, feedFollow.FeedName)

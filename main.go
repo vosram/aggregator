@@ -32,6 +32,7 @@ func main() {
 	activeCommands.register("follow", middlewareLoggedIn(handleFeedFollow))
 	activeCommands.register("unfollow", middlewareLoggedIn(handleFeedUnfollow))
 	activeCommands.register("following", middlewareLoggedIn(handleListFeedFollows))
+	activeCommands.register("browse", middlewareLoggedIn(handleBrowse))
 
 	db, err := sql.Open("postgres", config.DBUrl)
 	if err != nil {

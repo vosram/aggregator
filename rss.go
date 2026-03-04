@@ -96,10 +96,14 @@ func scrapeFeeds(s *state) error {
 	fmt.Printf("\n%s's Posts\n", feedData.Channel.Title)
 	fmt.Println("=======")
 	for _, feedItem := range feedData.Channel.Item {
-		publishedAt, err := time.Parse(time.RFC1123Z, feedItem.PubDate)
-		if err != nil {
-			log.Printf("Couldn't parse the pubDate for %s's post: %s\n", feedData.Channel.Title, feedItem.Title)
-			continue
+		publishedAt := sql.NullTime{}
+
+		if t, err := time.Parse(time.RFC1123Z, feedItem.PubDate); err == nil {
+			// time is valid and will not be null
+			publishedAt = sql.NullTime{
+				Time:  t,
+				Valid: true,
+			}
 		}
 
 		existingPost, err := s.db.GetPostByUrl(context.Background(), feedItem.Link)
@@ -117,7 +121,7 @@ func scrapeFeeds(s *state) error {
 			Title:       feedItem.Title,
 			Url:         feedItem.Link,
 			Description: feedItem.Description,
-			PublishedAt: publishedAt.UTC(),
+			PublishedAt: publishedAt,
 			FeedID:      feed.ID,
 		})
 		if err != nil {

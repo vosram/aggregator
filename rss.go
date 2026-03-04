@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vosram/aggregator/internal/database"
 )
 
@@ -94,7 +96,35 @@ func scrapeFeeds(s *state) error {
 	fmt.Printf("\n%s's Posts\n", feedData.Channel.Title)
 	fmt.Println("=======")
 	for _, feedItem := range feedData.Channel.Item {
-		fmt.Printf("* %s\n", feedItem.Title)
+		publishedAt, err := time.Parse(time.RFC1123Z, feedItem.PubDate)
+		if err != nil {
+			log.Printf("Couldn't parse the pubDate for %s's post: %s\n", feedData.Channel.Title, feedItem.Title)
+			continue
+		}
+
+		existingPost, err := s.db.GetPostByUrl(context.Background(), feedItem.Link)
+		if err == nil {
+			// post already exist
+			log.Printf("post %s already exist, skipping...\n", existingPost.Url)
+			continue
+		}
+
+		now := time.Now().UTC()
+		post, err := s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   now,
+			UpdatedAt:   now,
+			Title:       feedItem.Title,
+			Url:         feedItem.Link,
+			Description: feedItem.Description,
+			PublishedAt: publishedAt.UTC(),
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			log.Printf("couldn't create post or post already exist: %s from %s\n", feedItem.Title, feedData.Channel.Title)
+			continue
+		}
+		fmt.Printf("Created Post for: %s\n", post.Title)
 	}
 	return nil
 }
